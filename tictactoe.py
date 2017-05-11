@@ -137,7 +137,7 @@ class Board:
 		result = ""
 		for i in range(self.__dimensions):
 			result += str(random.randrange(start, stop))
-			if i < self.__dimensions:
+			if i < self.__dimensions - 1:
 				result += "."
 		return result
 
@@ -146,7 +146,7 @@ class Board:
 		return self.__get_random_coordinate(center, center + 1)
 
 	def place_random(self, token):
-		return self.place_token(self.__get_random_coordinate(0, self.__dimensions + 2), token)
+		return self.place_token(self.__get_random_coordinate(0, self.__dimensions + 1), token)
 
 	def __is_winning_move(self, coordinate, player):
 		intersecting_paths = list()
@@ -298,6 +298,7 @@ while not board.is_full() and not board.has_winner():
 		print("Remaining attempts:  " + str(3 - move_attempts) + " failure will result in random placement.")
 		coordinate_move = input("Player " + str(player_to_play + 1) + " please input coordinates (<nth index>.<nth - 1 "
 																	"index>. ... .<3rd index>.<rows>.<cols>) of move: ")
+		move_attempts += 1
 		move_result = board.place_token(coordinate_move, board.players[player_to_play])
 
 	if move_result > 0 and move_attempts >= 3:
