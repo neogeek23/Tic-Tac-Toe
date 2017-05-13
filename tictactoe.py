@@ -5,6 +5,8 @@ import itertools
 
 
 class Player:
+	# Player is separate from Board in case I ever want to make a bot, at which point players will need to have boards
+	# and because I need a mystery player to steal center sometimes
 	def __init__(self, index):
 		self.__index = index
 		self.__move_list = list()
@@ -187,6 +189,9 @@ class Board:
 		return None
 
 	def __get_dimension_locks(self):
+		# This gets all unique permutations of True-False for each dimension so 2^n elements
+		# This is used to create a matrix of all the possible cross sections of a n-space
+		# This is also used to pattern all the ways to manipulate a 1-dimensional element, increase/decrease it
 		final = list()
 		initial = list()
 
@@ -220,29 +225,27 @@ class Board:
 							else:
 								temp[j] = (temp[j] - i - (self.__dimensions + 1)) % (self.__dimensions + 1)
 					patterned_edit.append(temp)
-				if patterned_edit not in result:
+				if patterned_edit not in result and self.__is_path_continuous(patterned_edit, freedom):
 					result.append(patterned_edit)
 			if result not in path_set:
 				path_set.append(result)
-
-		# This will prune out impossible paths (paths that wrap around the space)
-		for paths in path_set:
-			for path in paths:
-				slope_is_legit = True
-				for i in range(len(path)):
-					found_a_slope_buddy = False
-					for j in range(len(path)):
-						if i != j:
-							point_has_good_slope = True
-							for k in range(len(path[i])):
-								if freedoms[k]:
-									point_has_good_slope = point_has_good_slope and abs(path[i][k] - path[j][k]) == 1
-							found_a_slope_buddy = found_a_slope_buddy or point_has_good_slope
-					slope_is_legit = slope_is_legit and found_a_slope_buddy
-				if not slope_is_legit:
-					paths.remove(path)
-
 		return path_set
+
+	def __is_path_continuous(self, path, freedoms):
+		# This will prune out impossible paths (paths that wrap around the space)
+		# Though this could be static, it doesn't feel right as static, so I haven't made it so.
+		slope_is_legit = True
+		for i in range(len(path)):
+			found_a_slope_buddy = False
+			for j in range(len(path)):
+				if i != j:
+					point_has_good_slope = True
+					for k in range(len(path[i])):
+						if freedoms[k]:
+							point_has_good_slope = point_has_good_slope and abs(path[i][k] - path[j][k]) == 1
+					found_a_slope_buddy = found_a_slope_buddy or point_has_good_slope
+			slope_is_legit = slope_is_legit and found_a_slope_buddy
+		return slope_is_legit
 
 	def get_winning_path(self):
 		result = ""
@@ -258,9 +261,9 @@ class Board:
 		return result
 
 # Setup Inputs
-print("\nWelcome to multidimensional Tic-Tac-Toe!\n\nThe board will contain (n+1)^n for n dimensions.\nFor even "
+print("\nWelcome to multidimensional Tic-Tac-Toe!\n\nThe board will contain (n+1)^n spaces for n dimensions.\nFor even "
 	  "dimensions starting with the 4th dimension, the center space can be setup to be unplayable.\nClaim n+1 "
-	  "spaces in a row to win!\n")
+	  "spaces in a continuous streak to win!\n")
 difficulty_attempts = 1
 difficulty = input("How many dimensions of Tic Tac Toe would you like to attempt? ")
 
@@ -304,7 +307,8 @@ while not board.is_full() and not board.has_winner():
 	player_to_play = turn % 2
 	move_attempts = 1
 	coordinate_move = input("\nPlayer " + str(player_to_play + 1) + " please input coordinates (<nth index>.<nth - 1 "
-																  "index>. ... .<3rd index>.<rows>.<cols>) of move: ")
+							"index>. ... .<3rd index>.<rows>.<cols>) to place your '"
+							+ board.players[player_to_play].get_token() + "' token: ")
 	move_result = board.place_token(coordinate_move, board.players[player_to_play])
 	while move_result > 0 and move_attempts < 3:
 		if move_result == 1:
@@ -314,8 +318,9 @@ while not board.is_full() and not board.has_winner():
 		if move_result == 3:
 			print("Input Error on Coordinate.  There space described by coordinate is already claimed.")
 		print("Remaining attempts:  " + str(3 - move_attempts) + " failure will result in random placement.")
-		coordinate_move = input("Player " + str(player_to_play + 1) + " please input coordinates (<nth index>.<nth - 1 "
-																	"index>. ... .<3rd index>.<rows>.<cols>) of move: ")
+		coordinate_move = input("\nPlayer " + str(player_to_play + 1) + " please input coordinates (<nth index>.<nth "
+								"- 1 index>. ... .<3rd index>.<rows>.<cols>) to place your '"
+								+ board.players[player_to_play].get_token() + "' token: ")
 		move_attempts += 1
 		move_result = board.place_token(coordinate_move, board.players[player_to_play])
 
