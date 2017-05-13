@@ -189,9 +189,10 @@ class Board:
 		return None
 
 	def __get_dimension_locks(self):
-		# This gets all unique permutations of True-False for each dimension so 2^n elements
-		# This is used to create a matrix of all the possible cross sections of a n-space
-		# This is also used to pattern all the ways to manipulate a 1-dimensional element, increase/decrease it
+		# This gets all unique permutations of True-False for each dimension so 2^n elements.
+		# This is used as a matrix to know when to freeze a dimension to create cross sections of a n-space, 
+		# it gets all possibilities.
+		# This is also used to pattern all the ways to manipulate a 2-dimensional element, increase/decrease it.
 		final = list()
 		initial = list()
 
@@ -211,7 +212,7 @@ class Board:
 
 	def __get_winning_paths(self, coord_list, freedoms):
 		path_set = list()
-		# This will get all possible paths that are 5 long from the starting point
+		# This will get all possible paths that are n+1 long from the starting point, including wraparounds 
 		for freedom in freedoms:
 			result = list()
 			for edit_pattern in freedoms:
