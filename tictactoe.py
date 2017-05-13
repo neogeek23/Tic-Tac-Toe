@@ -320,7 +320,7 @@ while not board.is_full() and not board.has_winner():
 		if move_result == 2:
 			print("Input Error on Coordinate.  The number of indexes in your coordinate does not match the dimension.")
 		if move_result == 3:
-			print("Input Error on Coordinate.  That space described by your coordinate is already claimed.")
+			print("Input Error on Coordinate.  That space is already claimed.")
 		print("Remaining attempts:  " + str(3 - move_attempts) + " failure will result in random placement.")
 		coordinate_move = input("\nPlayer " + str(player_to_play + 1) + " please input coordinates (<nth index>.<nth "
 								"- 1 index>. ... .<3rd index>.<rows>.<cols>) to place your '"
