@@ -198,7 +198,7 @@ class Board:
 		for i in range(self.__dimensions):
 			initial.append(True)
 
-		for i in range(len(initial)):
+		for i in range(len(initial)):	# Don't do +1 b/c +1 item will get all False
 			if i > 0:
 				initial[i - 1] = False
 			for j in list(itertools.permutations(initial)):
