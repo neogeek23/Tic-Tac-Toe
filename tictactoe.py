@@ -82,7 +82,7 @@ class Board:
 		if d < 3:
 			header = "\n   "
 			for i in range(self.__dimensions + 1):
-				if i > 9:  # lets be honest 100^99 will destroy memory; already dies a dim 8, 7 is struggle
+				if i > 9:  # lets be honest this will destroy memory; already dies at dim 8, 7 is struggle
 					header += "| " + str(i)
 				else:
 					header += "| " + str(i) + " "
@@ -281,6 +281,10 @@ dimension = int(difficulty)
 if dimension < 2:
 	print("Tic Tac Toe requires at least 2 dimensions and you chose " + difficulty + ", so we will use 2 dimensions.")
 	dimension = 2
+else:
+	print("You have requested a board of " + str(math.pow(dimension + 1, dimension)) + " spaces.")
+	if dimension > 5:
+		print("This is a very large board.  It may take some time to create.")
 
 board = Board(dimension)
 if dimension > 2 and dimension % 2 == 0:
@@ -334,7 +338,7 @@ while not board.is_full() and not board.has_winner():
 # Reporting on End of Game
 board.display()
 if board.is_full():
-	print("Board has filled a no victor has been found.  Game Over.  Thanks for playing, try again.")
+	print("Board has filled and no victor has been found.  Game Over.  Thanks for playing, try again.")
 
 if board.has_winner():
 	print("\nVictory to Player " + str(board.players[board.get_winner()].get_id() + 1) + " - respect.  The "
