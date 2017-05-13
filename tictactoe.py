@@ -1,6 +1,7 @@
 import sys
 import math
 import random
+import itertools
 
 
 class Player:
@@ -11,9 +12,9 @@ class Player:
 		if index < 0:
 			self.__token = "-"
 		elif index == 0:
-			self.__token = "O"
-		else:
 			self.__token = "X"
+		else:
+			self.__token = "O"
 
 	def get_id(self):
 		return self.__index
@@ -79,7 +80,7 @@ class Board:
 		if d < 3:
 			header = "\n   "
 			for i in range(self.__dimensions + 1):
-				if i > 9:  # lets be honest 100^99 will destroy memory
+				if i > 9:  # lets be honest 100^99 will destroy memory; already dies a dim 8, 7 is struggle
 					header += "| " + str(i)
 				else:
 					header += "| " + str(i) + " "
@@ -90,6 +91,25 @@ class Board:
 					row_string += " "
 				for j in i:
 					row_string += "| " + j.get_owner() + " "
+				print(row_string)
+		elif d < 4:
+			header = "\n"
+			for i in range(self.__dimensions + 1):
+				if i != 0:
+					header += "\t"
+				header += " {:2s}".format(str(i)[:1])
+				for j in range(self.__dimensions + 1):
+					header += "| {:2s}".format(str(j)[:1])
+			print(header)
+			for i in range(self.__dimensions + 1):
+				row_string = ""
+				for j in range(self.__dimensions + 1):
+					if j != 0:
+						row_string += "\t"
+					row_string += " {:2s}".format(str(i)[:1])
+					for k in range(self.__dimensions + 1):
+						# One of these days I'll think about why it is j-i-k not i-j-k #madness
+						row_string += "| " + list_of_list[j][i][k].get_owner() + " "
 				print(row_string)
 		else:
 			for i in range(self.__dimensions + 1):
@@ -149,82 +169,80 @@ class Board:
 		return self.place_token(self.__get_random_coordinate(0, self.__dimensions + 1), token)
 
 	def __is_winning_move(self, coordinate, player):
-		intersecting_paths = list()
-		indexes = list()
+		coord_list = list()
+		for s in coordinate.split("."):
+			coord_list.append(int(s))
 
-		for i in coordinate.split("."):
-			indexes.append(int(i))
+		freedom_set = self.__get_dimension_locks()
+		intersecting_pathsets = self.__get_winning_paths(coord_list, freedom_set)
 
-		# Get all of the coordinate for straight (single dimension change) paths that intersect our coordinate
-		for i in range(self.__dimensions):
-			temp_list = list()
-			for j in range(self.__dimensions + 1):
-				temp_coord = indexes.copy()
-				temp_coord[i] = j
-				temp_list.append(temp_coord)
-			intersecting_paths.append(temp_list)
-
-		# Attempt to build all possible diagonal (multiple dimension change) paths that intersect our coordinate
-		# I feel like this might be over kill but with no limits on dimensions it gets confusing, better safe
-		intersecting_paths += self.__get_diagonals(indexes, -1, 1)
-		intersecting_paths += self.__get_diagonals(indexes, 1, -1)
-		intersecting_paths += self.__get_diagonals(indexes, -1, -1)
-		intersecting_paths += self.__get_diagonals(indexes, 1, 1)
-
-		for path in intersecting_paths:
-			solution_in_path = True
-			for space in path:
-				solution_in_path = solution_in_path and self.__get_space(space).get_owner() == player.get_token()
-			if solution_in_path:
-				self.__winning_path = path
-				return player.get_id()
+		for paths in intersecting_pathsets:
+			for path in paths:
+				solution_in_path = True
+				for space in path:
+					solution_in_path = solution_in_path and self.__get_space(space).get_owner() == player.get_token()
+				if solution_in_path:
+					self.__winning_path = path
+					return player.get_id()
 		return None
 
-	# This will produce a list of all possible diagonals of a given coordinate set
-	def __get_diagonals(self, indexes, up, dn):
-		intersecting_paths = list()
-		for i in range(self.__dimensions - 1):  # For each dimension less the first, no one cares about that
-			temp_list = list()
-			for j in range(self.__dimensions + 1):  # For each coordinate in a path, since 1 extra we do + 1
-				if j == 0:
-					temp_coord = indexes.copy()
-				else:
-					temp_coord = temp_list[j - 1].copy()
-				if j > 0:  # by skipping the first item, ensure our coordinate is included
-					for k in range(self.__dimensions - i):  # For each point in a coordinate
-						if indexes[k + i] >= self.__dimensions / 2:  # Below ensures any coordinate in range
-							temp_coord[k + i] += up + (self.__dimensions + 1 if temp_coord[k + i] + up < 0 else 0) \
-										- (self.__dimensions + 1 if temp_coord[k + i] + up > self.__dimensions else 0)
-						else:
-							temp_coord[k + i] += dn + (self.__dimensions + 1 if temp_coord[k + i] + dn < 0 else 0) \
-										- (self.__dimensions + 1 if temp_coord[k + i] + dn > self.__dimensions else 0)
-				if 0 < i:
-					dim_locked_coord = indexes[:i] + temp_coord[i:]	 # Should be allowing dimensional cross sections
-				else:
-					dim_locked_coord = temp_coord
-				temp_list.append(dim_locked_coord)
-			include_in_temp_list = self.__is_slope_correct(temp_list, i)  # Skip indexes below i for cross section
-			if include_in_temp_list:
-				intersecting_paths.append(temp_list)
-		return intersecting_paths
+	def __get_dimension_locks(self):
+		final = list()
+		initial = list()
 
-	# This will determine if the change in between all coordinate sets in a coordinate group is equal by ensuring that
-	# for each coordinate set in a coordinate group there is another coordinate set in which the difference between them
-	# is a net of 1 for each coordinate in of the coordinate sets
-	@staticmethod
-	def __is_slope_correct(coord_list, index_start):
-		slope_is_correct = True
-		for i in range(len(coord_list)):
-			found_a_slope_match = False
-			for j in range(len(coord_list)):
-				if i != j:
-					this_point_in_slope = True
-					for k in range(len(coord_list[i])):
-						if k >= index_start:
-							this_point_in_slope = this_point_in_slope and abs(coord_list[i][k] - coord_list[j][k]) == 1
-					found_a_slope_match = found_a_slope_match or this_point_in_slope
-			slope_is_correct = slope_is_correct and found_a_slope_match
-		return slope_is_correct
+		for i in range(self.__dimensions):
+			initial.append(True)
+
+		for i in range(len(initial)):
+			if i > 0:
+				initial[i - 1] = False
+			for j in list(itertools.permutations(initial)):
+				temp = list()
+				for k in list(j):
+					temp.append(k)
+				if temp not in final:
+					final.append(temp)
+		return final
+
+	def __get_winning_paths(self, coord_list, freedoms):
+		path_set = list()
+		# This will get all possible paths that are 5 long from the starting point
+		for freedom in freedoms:
+			result = list()
+			for edit_pattern in freedoms:
+				patterned_edit = list()
+				for i in range(self.__dimensions + 1):
+					temp = coord_list.copy()
+					for j in range(len(temp)):
+						if freedom[j]:
+							if edit_pattern[j]:
+								temp[j] = (temp[j] + i + (self.__dimensions + 1)) % (self.__dimensions + 1)
+							else:
+								temp[j] = (temp[j] - i - (self.__dimensions + 1)) % (self.__dimensions + 1)
+					patterned_edit.append(temp)
+				if patterned_edit not in result:
+					result.append(patterned_edit)
+			if result not in path_set:
+				path_set.append(result)
+
+		# This will prune out impossible paths (paths that wrap around the space)
+		for paths in path_set:
+			for path in paths:
+				slope_is_legit = True
+				for i in range(len(path)):
+					found_a_slope_buddy = False
+					for j in range(len(path)):
+						if i != j:
+							point_has_good_slope = True
+							for k in range(len(path[i])):
+								if freedoms[k]:
+									point_has_good_slope = point_has_good_slope and abs(path[i][k] - path[j][k]) == 1
+							found_a_slope_buddy = found_a_slope_buddy or point_has_good_slope
+					slope_is_legit = slope_is_legit and found_a_slope_buddy
+				if not slope_is_legit:
+					paths.remove(path)
+
+		return path_set
 
 	def get_winning_path(self):
 		result = ""
