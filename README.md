@@ -3,7 +3,9 @@
 So this is how tic tac toe would work if it was in n-space.  I think.  Basically you must claim n+1 continuous spaces in some cross section or throughout the entire n-space.  Being continuous means that the closest next space is no more than 1 location away in each coordinate but is also at least 1 location away in at least 1 coordinate (otherwise it'd be the same point).  
 
 Example winning paths in 4 space:
+
  2d - CS    3d - CS     No CS     1d - CS
+
 (0.1.2.3)  (2.2.2.2)  (0.0.0.0)  (0.1.2.3)
 (0.2.2.2)  (1.2.1.1)  (1.1.1.1)  (1.1.2.3)
 (0.3.2.1)  (0.2.0.0)  (2.2.2.2)  (2.1.2.3)
