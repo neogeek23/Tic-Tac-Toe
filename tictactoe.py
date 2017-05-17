@@ -5,6 +5,11 @@ import itertools
 from enum import Enum
 
 
+def main():
+	board = create_board_from_inputs()
+	play_tic_tac_toe(board)
+
+
 class PlacementResult(Enum):
 	success = 0
 	non_numeric_input = 1
@@ -281,11 +286,6 @@ class Board:
 					result += " "
 			result += ")\n"
 		return result
-
-
-def main():
-	board = create_board_from_inputs()
-	play_tic_tac_toe(board)
 
 
 def create_board_from_inputs():
