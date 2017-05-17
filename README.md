@@ -1,6 +1,6 @@
 ﻿# Tic-Tac-Toe
 
-So this is how tic tac toe would work if it was in n-space.  I think.  Basically you must claim n+1 continuous spaces in some cross section or throughout the entire n-space.  Being continuous means that the closest next space is no more than 1 location away in each coordinate but is also at least 1 location away in at least 1 coordinate (otherwise it'd be the same point).  
+So this is how tic tac toe would work if it was in n-space.  Basically you must claim n+1 continuous spaces in some cross section or throughout the entire n-space.  Being continuous means that the closest next space is no more than 1 location away in each coordinate but is also at least 1 location away in at least 1 coordinate (otherwise it'd be the same point).  
 
 Example winning paths in 4 space:
 
