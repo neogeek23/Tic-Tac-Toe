@@ -341,11 +341,11 @@ def create_board_from_inputs():
 
 def play_tic_tac_toe(board):
 	turn = 0
+	max_attempts = 3
 	while not board.is_full() and not board.has_winner():
 		board.display()
 		player_to_play = turn % 2
 		move_attempts = 1
-		max_attempts = 3
 		coordinate_move = input(
 			"\nPlayer " + str(player_to_play + 1) +
 			" please input coordinates (<nth index>.<nth - 1 index>. ... .<3rd index>.<rows>.<cols>) to place your '" +
